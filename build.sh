@@ -1,5 +1,5 @@
-#Custom Build Script
-#Modified from build.sh of ThunderZap for Xperia L. Credits to varun.chitre15
+#Custom Build Script for automation of build process.
+
 
 
 #Build
