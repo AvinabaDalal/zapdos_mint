@@ -39,6 +39,12 @@
 
 #include <linux/input/mt.h>
 
+#ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+#include <linux/input/doubletap2wake.h>
+#endif
+#endif
+
 #if IST30XX_DEBUG
 #include "ist30xx_misc.h"
 #endif
@@ -96,7 +102,7 @@ int ist30xx_zvalue_back = 0;
 void ts_power_enable(int en)
 {
 	int ret;
-	
+
 	printk(KERN_ERR "%s %s\n", __func__, (en) ? "on" : "off");
 	if (en == TOUCH_ON) {
 
@@ -107,7 +113,7 @@ void ts_power_enable(int en)
 				tsp_regulator_3_3 = NULL;
 				return -1;
 			}
-			
+
 			ret = regulator_set_voltage(tsp_regulator_3_3,3300000,3300000);
 			printk("[TSP] %s --> regulator_set_voltage ret = %d \n",__func__, ret);
 		}
@@ -119,16 +125,16 @@ void ts_power_enable(int en)
 				tsp_regulator_1_8 = NULL;
 				return -1;
 			}
-			
+
 			ret = regulator_set_voltage(tsp_regulator_1_8,1800000,1800000);
 			printk("[TSP] %s --> regulator_set_voltage ret = %d \n",__func__, ret);
 		}
-		
+
 		ret = regulator_enable(tsp_regulator_3_3);
 		printk("[TSP] --> 1.8v regulator_enable ret = %d \n", ret);
 
 		msleep(10);
-		
+
 		ret = regulator_enable(tsp_regulator_1_8);
 		printk("[TSP] --> 3.3v regulator_enable ret = %d \n", ret);
 
@@ -136,7 +142,7 @@ void ts_power_enable(int en)
 
 	}
 	else {
-	
+
 		ret = regulator_disable(tsp_regulator_1_8);
 		printk("[TSP] --> 3.3v regulator_disable ret = %d \n", ret);
 
@@ -144,7 +150,7 @@ void ts_power_enable(int en)
 
 		ret = regulator_disable(tsp_regulator_3_3);
 		printk("[TSP] --> 1.8v regulator_disable ret = %d \n", ret);
-		
+
 	}
 }
 
@@ -225,7 +231,7 @@ struct tsp_cmd tsp_cmds[] = {
 	{TSP_CMD("get_y_num", get_y_num),},
 	{TSP_CMD("get_reference", get_reference),},
 	{TSP_CMD("get_cm_abs", get_cm_abs),},
-	{TSP_CMD("get_rawcap", get_rawcap),}, 	
+	{TSP_CMD("get_rawcap", get_rawcap),},
 	{TSP_CMD("get_cm_delta", not_support_cmd),},
 	{TSP_CMD("get_intensity", not_support_cmd),},
 	{TSP_CMD("run_reference_read", not_support_cmd),},
@@ -438,7 +444,7 @@ int ist30xx_parse_tsp_node_test(void)
 	TSP_INFO *tsp = &ist30xx_tsp_info;
 
 	printk("[TSP] ist30xx_parse_tsp_node tsp->height : %d, tsp->width : %d\n", tsp->height, tsp->width);
-	int k = 0;	
+	int k = 0;
 	for (i = 0; i < tsp->width; i++) {
 		for (j = 0; j < tsp->height; j++) {
 			idx = (i * tsp->height) + j;
@@ -450,7 +456,7 @@ int ist30xx_parse_tsp_node_test(void)
 				cm_abs[k] = raw;
 				//*base_buf++ = base;
 				//printk("[TSP] cm_abs [%d] : %d\n", k, raw);
-                                k++;				
+                                k++;
 			}
 		}
 	}
@@ -491,7 +497,7 @@ int ist30xx_read_tsp_node_test(struct ist30xx_data *ts)
 static void run_cm_abs_read(void *device_data)
 {
 	//not_reset = 1;
-	
+
 	struct ist30xx_data *info = (struct ist30xx_data *)device_data;
 
     	disable_irq(info->client->irq);
@@ -516,7 +522,7 @@ static void run_cm_abs_read(void *device_data)
     	info->cmd_state = 2;
     enable_irq(info->client->irq);
    //not_reset = 0;
-    
+
     	return;
 
 /*	dev_info(&info->client->dev, "%s: %s(%d)\n", __func__); */
@@ -573,7 +579,7 @@ static void get_cm_abs(void *device_data)
 
 	dev_info(&info->client->dev, "%s: %s(%d)\n", __func__, buff,
 			strnlen(buff, sizeof(buff)));
-    
+
 }
 
 
@@ -587,13 +593,13 @@ static void get_rawcap(void *device_data)
 	int node;
 
     printk("[TSP] %s, %d\n", __func__, __LINE__ );
-    
+
 	set_default_result(info);
 	node = check_rx_tx_num(info);
 
 	if (node < 0)
 		return;
-    
+
 	val = cm_abs[node];
 	snprintf(buff, sizeof(buff), "%u", val);
 	set_cmd_result(info, buff, strnlen(buff, sizeof(buff)));
@@ -635,7 +641,7 @@ static void get_y_num(void *device_data)
 	int val;
 	int sensing_ch;
 	set_default_result(ts);
-	
+
 	sensing_ch = 9;
 	val = sensing_ch;
 	if (val < 0) {
@@ -686,18 +692,18 @@ static void get_fw_ver_ic(void *device_data)
     mutex_lock(&ist30xx_mutex);
 	ist30xx_disable_irq(ts_data);
 
-	ret = ist30xx_cmd_run_device(ts_data->client);	
+	ret = ist30xx_cmd_run_device(ts_data->client);
 	ret = ist30xx_read_cmd(ts_data->client, CMD_GET_PARAM_VER, &ts_data->param_ver);
 
 	part_fw_ver = ts_data->param_ver;
 
 	ist30xx_start(ts_data);
 
-	ist30xx_enable_irq(ts_data);	
+	ist30xx_enable_irq(ts_data);
     mutex_unlock(&ist30xx_mutex);
 
         snprintf(buff, sizeof(buff), "IM00%02x%02x", (part_fw_ver>>8)&0xFF, part_fw_ver&0xFF);
-	
+
 	set_cmd_result(info, buff, strnlen(buff, sizeof(buff)));
 	info->cmd_state = 2;
 	dev_info(&info->client->dev, "%s: %s(%d)\n", __func__,
@@ -714,7 +720,7 @@ static void check_reference_value(struct ist30xx_data *ts)
 	int max_value = 0, min_value = 1000000;
 
 	printk(KERN_ERR "[TSP] %s entered. line : %d,\n", __func__, __LINE__);
-	
+
     	disable_irq(info->client->irq);
 
     	printk("[TSP] %s, %d\n", __func__, __LINE__ );
@@ -729,11 +735,11 @@ static void check_reference_value(struct ist30xx_data *ts)
 			if((cm_abs[k] !=0)&&(min_value>cm_abs[k]))
 				min_value = cm_abs[k];
 			if((cm_abs[k] !=0)&&(max_value<cm_abs[k]))
-				max_value = cm_abs[k];			
+				max_value = cm_abs[k];
 			k++;
 		}
 	}
-	
+
 	printk(KERN_ERR "min:%d,max:%d", min_value, max_value);
 	printk(KERN_INFO "\n");
 	snprintf(buff, sizeof(buff), "%d,%d", min_value, max_value);
@@ -755,9 +761,9 @@ static void get_reference(void *device_data)
 }
 
 static ssize_t phone_firmware_show(struct device *dev, struct device_attribute *attr, char *buf)
-{   
+{
 	int phone_fw_ver=0;
-	u32 val = 0;	
+	u32 val = 0;
 
 	printk("[TSP] %s\n",__func__);
 
@@ -767,7 +773,7 @@ static ssize_t phone_firmware_show(struct device *dev, struct device_attribute *
 }
 
 static ssize_t part_firmware_show(struct device *dev, struct device_attribute *attr, char *buf)
-{   
+{
 	int ret, part_fw_ver;
 
 	printk("[TSP] %s\n",__func__);
@@ -775,7 +781,7 @@ static ssize_t part_firmware_show(struct device *dev, struct device_attribute *a
     mutex_lock(&ist30xx_mutex);
 	ist30xx_disable_irq(ts_data);
 
-	ret = ist30xx_cmd_run_device(ts_data->client);	
+	ret = ist30xx_cmd_run_device(ts_data->client);
 	ret = ist30xx_read_cmd(ts_data->client, CMD_GET_PARAM_VER, &ts_data->param_ver);
 
 	part_fw_ver = ts_data->param_ver;
@@ -784,14 +790,14 @@ static ssize_t part_firmware_show(struct device *dev, struct device_attribute *a
 
 	ist30xx_enable_irq(ts_data);
     mutex_unlock(&ist30xx_mutex);
-	
+
 	printk("[TSP] %s : %x\n",__func__, part_fw_ver);
-	
+
 	return sprintf(buf, "IM00%02x%02x", (part_fw_ver>>8)&0xFF, part_fw_ver&0xFF);
 }
 
 static ssize_t threshold_firmware_show(struct device *dev, struct device_attribute *attr, char *buf)
-{  
+{
 	int threshord =30;
 	printk("[TSP] %s\n",__func__);
 
@@ -815,7 +821,7 @@ static ssize_t back_sensitivity_show(struct device *dev, struct device_attribute
 static ssize_t touchkey_threshold_show(struct device *dev,  struct device_attribute *attr, char *buf)
 {
     int threshold = 30;
-	
+
     printk("[TSP] touch tkey threshold: %d\n", threshold);
 
     return snprintf(buf, sizeof(int), "%d\n", threshold);
@@ -827,7 +833,7 @@ static ssize_t firmware_update(struct device *dev, struct device_attribute *attr
     sprintf(IsfwUpdate,"%s\n",FW_DOWNLOADING);
 
     ret =  ist30xx_force_bin_update(ts_data);
-   // ret =  ist30xx_force_param_update(ts_data);	
+   // ret =  ist30xx_force_param_update(ts_data);
 
     if(ret == 0)
     {
@@ -839,7 +845,7 @@ static ssize_t firmware_update(struct device *dev, struct device_attribute *attr
         sprintf(IsfwUpdate,"%s\n",FW_DOWNLOAD_FAIL);
         return sprintf(buf, "%d", -1 );
     }
-    
+
 }
 
 static ssize_t firmware_update_status(struct device *dev, struct device_attribute *attr, char *buf)
@@ -851,7 +857,7 @@ static ssize_t firmware_update_status(struct device *dev, struct device_attribut
     sprintf(IsfwUpdate,"%s\n",FW_DOWNLOADING);
 
     ret =  ist30xx_force_bin_update(ts_data);
-   // ret =  ist30xx_force_param_update(ts_data);	
+   // ret =  ist30xx_force_param_update(ts_data);
 
     if(ret == 0)
     {
@@ -868,19 +874,61 @@ static ssize_t firmware_update_status(struct device *dev, struct device_attribut
 
 void ist30xx_disable_irq(struct ist30xx_data *data)
 {
+
+#ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+#if defined(CONFIG_TOUCHSCREEN_SWEEP2WAKE) || defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
+	bool prevent_sleep = false;
+#endif
+#if defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
+	prevent_sleep = prevent_sleep || (dt2w_switch > 0);
+#endif
+#endif
+
+#ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+	if (prevent_sleep) {
+		enable_irq_wake(data->client->irq);
+	} else {
+#endif
+
 	if (data->irq_enabled) {
 		disable_irq(data->client->irq);
 		data->irq_enabled = 0;
 	}
+
+#ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+	} //prevent_sleep
+#endif
+
 }
 
 void ist30xx_enable_irq(struct ist30xx_data *data)
 {
+
+#ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+#if defined(CONFIG_TOUCHSCREEN_SWEEP2WAKE) || defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
+	bool prevent_sleep = false;
+#endif
+#if defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
+	prevent_sleep = prevent_sleep || (dt2w_switch > 0);
+#endif
+#endif
+
+#ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+	if (prevent_sleep) {
+		disable_irq_wake(data->client->irq);
+	} else {
+#endif
+
 	if (!data->irq_enabled) {
 		enable_irq(data->client->irq);
 		msleep(50);
 		data->irq_enabled = 1;
 	}
+
+#ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+	} //prevent_sleep
+#endif
+
 }
 
 int ist30xx_max_error_cnt = MAX_ERR_CNT;
@@ -1193,7 +1241,7 @@ static void report_input_data(struct ist30xx_data *data, int finger_counts, int 
 		input_mt_slot(data->input_dev, data->fingers[i].bit_field.id - 1);
 		input_mt_report_slot_state(data->input_dev, MT_TOOL_FINGER,
 					   (pressure ? true : false));
-	
+
 		if (pressure) {
 		input_report_abs(data->input_dev, ABS_MT_POSITION_X,
 				 data->fingers[i].bit_field.y);
@@ -1224,7 +1272,7 @@ for (i = finger_counts; i < finger_counts + key_counts; i++) {
 
 		ist30xx_zvalue = data->fingers[i].bit_field.y;
 
-	if(id==1){	
+	if(id==1){
 	if(!press)
 			ist30xx_zvalue_menu = 0;
 		else
@@ -1235,7 +1283,7 @@ for (i = finger_counts; i < finger_counts + key_counts; i++) {
 			ist30xx_zvalue_back = 0;
 		else
 			ist30xx_zvalue_back = ist30xx_zvalue;
-	}	
+	}
 	input_report_key(data->input_dev, ist30xx_key_code[id], press);
 	count++;
 }
@@ -1389,7 +1437,7 @@ static void ist30xx_early_suspend(struct early_suspend *h)
 	mutex_lock(&ist30xx_mutex);
 	ist30xx_disable_irq(data);
 	ist30xx_internal_suspend(data);
-	clear_input_data(data);	
+	clear_input_data(data);
 	mutex_unlock(&ist30xx_mutex);
 }
 static void ist30xx_late_resume(struct early_suspend *h)
@@ -1529,7 +1577,7 @@ void timer_handler(unsigned long data)
 				ps->get_property(ps, POWER_SUPPLY_PROP_TEMP, &value);
 
 				temper = (value.intval/10);  // temperature read
-				
+
 				if (ist30xx_temp_status == NORMAL_TEMPERATURE) {
 					if (temper < 15)        // 15 celcius
 						ist30xx_set_temp_mode(LOW_TEMPERATURE);
@@ -1578,7 +1626,7 @@ static void isCalibration(void){
 
 	if(strstr(global_cmd_line,ENG_CALISTR) != NULL)
 		califlag = 1;
-	
+
 }
 
 static int __devinit ist30xx_probe(struct i2c_client *		client,
@@ -1588,7 +1636,7 @@ static int __devinit ist30xx_probe(struct i2c_client *		client,
 	struct ist30xx_data *data;
 	struct input_dev *input_dev;
 	struct ist30xx_data *touch_dev;
-	struct device *fac_dev_ts;	
+	struct device *fac_dev_ts;
 
 	DMSG("[ TSP ] %s() ,the i2c addr=0x%x", __func__, client->addr);
 
@@ -1604,7 +1652,7 @@ static int __devinit ist30xx_probe(struct i2c_client *		client,
 		pr_err("%s: input_allocate_device failed (%d)\n", __func__, ret);
 		goto err_alloc_dev;
 	}
-	
+
 	client->irq = gpio_to_irq(60);
 	data->num_fingers = IST30XX_MAX_MT_FINGERS;
 	data->irq_enabled = 1;
@@ -1667,13 +1715,17 @@ static int __devinit ist30xx_probe(struct i2c_client *		client,
 #endif
 
 	ret = request_threaded_irq(client->irq, NULL, ist30xx_irq_thread,
+#ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+				   IRQF_TRIGGER_FALLING | IRQF_ONESHOT | IRQF_NO_SUSPEND, "ist30xx_ts", data);
+#else
 				   IRQF_TRIGGER_FALLING | IRQF_ONESHOT, "ist30xx_ts", data);
+#endif
 	if (ret)
 		goto err_irq;
 
 	ist30xx_disable_irq(data);
 	isCalibration();
-	
+
 	if(califlag==0){
 
 #if IST30XX_INTERNAL_BIN
@@ -1689,7 +1741,7 @@ static int __devinit ist30xx_probe(struct i2c_client *		client,
 	}
 else
 	printk("[TSP] Calibration mode F/W skip!!!");
-	
+
 	ist30xx_get_info(data);
 	ist30xx_enable_irq(data);
 
@@ -1705,7 +1757,7 @@ else
 
       /* sys fs */
 	sec_touchscreen = device_create(sec_class, NULL, 0, NULL, "sec_touchscreen");
-	if (IS_ERR(sec_touchscreen)) 
+	if (IS_ERR(sec_touchscreen))
 	{
 		dev_err(&client->dev,"Failed to create device for the sysfs1\n");
 		ret = -ENODEV;
@@ -1723,7 +1775,7 @@ else
 		pr_err("[TSP] Failed to create device file(%s)!\n", dev_attr_tsp_firm_update_status.attr.name);
 
 	sec_touchkey = device_create(sec_class, NULL, 0, NULL, "sec_touchkey");
-	if (IS_ERR(sec_touchkey)) 
+	if (IS_ERR(sec_touchkey))
 	{
 		dev_err(&client->dev,"Failed to create device for the sysfs1\n");
 		ret = -ENODEV;
@@ -1866,3 +1918,4 @@ module_exit(ist30xx_exit);
 
 MODULE_DESCRIPTION("Imagis IST30XX touch driver");
 MODULE_LICENSE("GPL");
+

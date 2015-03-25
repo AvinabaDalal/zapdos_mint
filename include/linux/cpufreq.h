@@ -269,6 +269,7 @@ static inline void cpufreq_verify_within_limits(struct cpufreq_policy *policy, u
 		policy->max = max;
 	if (policy->min > policy->max)
 		policy->min = policy->max;
+        
 	return;
 }
 

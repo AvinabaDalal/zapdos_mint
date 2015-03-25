@@ -8,6 +8,7 @@
 #include <mach/gpio.h>
 #include <mach/sec_debug.h>
 
+
 #if 0 /* should be fixed later */
 /* charger cable state */
 extern bool is_cable_attached;
