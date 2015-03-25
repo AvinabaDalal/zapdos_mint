@@ -31,7 +31,7 @@
 #include <mach/regulator.h>
 
 #define DELTA 				msecs_to_jiffies(1000)
-#define FREQ_TABLE_ENTRY		(4)
+#define FREQ_TABLE_ENTRY		(7)
 
 /*
  *   Cpu freqency is not be scaled yet, because of reasons of stablily.
@@ -52,9 +52,12 @@ struct sprd_dvfs_table {
 };
 
 static struct sprd_dvfs_table sc8810g_dvfs_table[] = {
-	[0] = { 1000000 , 1200000 }, /* 1000,000KHz,  1200mv */
-	[1] = { 600000 , 1100000 },  /* 600,000KHz,  1100mv */
-	[2] = { 400000 , 1100000 },  /* 400,000KHz,  1100mv */
+        [0] = { 1400000 , 1400000 }, /* 1400,000KHz,  1400mv */
+	[1] = { 1200000 , 1300000 }, /* 1200,000KHz,  1300mv */
+	[2] = { 1000000 , 1200000 },  /* 1000,000KHz,  1200mv */
+        [3] = { 800000 , 1125000 }, /* 800,000KHz,  1125mv */
+	[4] = { 600000 , 1100000 },  /* 600,000KHz,  1100mv */
+        [5] = { 400000 , 1075000 }, /* 400,000KHz,  1075mv */
 };
 
 static struct sprd_dvfs_table sc8810g_plus_dvfs_table[] = {
@@ -69,7 +72,7 @@ extern int global_cpufreq_max_limit;
 extern spinlock_t  g_cpufreq_lock;
 //end //modified by xing wei
 enum scalable_cpus {
-	CPU0 = 0,
+	CPU0 = 1,
 };
 
 struct scalable {
@@ -167,7 +170,7 @@ static int set_mcu_vdd(int cpu, unsigned long vdd_mcu_uv){
 
 static int set_mcu_freq(int cpu, unsigned long mcu_freq_hz){
 	int ret;
-	unsigned long freq_mcu_hz = mcu_freq_hz * 1000;
+	unsigned long freq_mcu_hz = mcu_freq_hz * 1024;
 	struct clk *clk = scalable_sc8810[cpu].clk;
 	ret = clk_set_rate(clk, freq_mcu_hz);
 	if(ret){
@@ -249,8 +252,8 @@ static int sc8810_is_plus(int cpu){
 	/*
 	 * sc8810+ runs at 1.2GHz
 	 */
-	if(cpu_clk == 1200000000)
-		sc8810_is_plus =  1;
+	/*if(cpu_clk == 1200000000)
+		sc8810_is_plus =  1;*/
 
 	return sc8810_is_plus;
 }
@@ -311,7 +314,7 @@ static int sprd_cpufreq_verify_speed(struct cpufreq_policy *policy)
 /*@return: KHz*/
 static unsigned int sprd_cpufreq_get_speed(unsigned int cpu)
 {
-	return cpu_clk_get_rate(cpu) / 1000;
+	return cpu_clk_get_rate(cpu) / 1024;
 }
 
 static int sprd_cpufreq_set_target(struct cpufreq_policy *policy,
@@ -418,8 +421,8 @@ static int sprd_cpufreq_driver_init(struct cpufreq_policy *policy)
 		return -ENODEV;
 	}
 	
-	policy->cur = cpu_clk_get_rate(policy->cpu) / 1000; /* current cpu frequency : KHz*/
-	policy->cpuinfo.transition_latency = 1 * 1000 * 1000;//why this value??
+	policy->cur = cpu_clk_get_rate(policy->cpu) / 1024; /* current cpu frequency : KHz*/
+	policy->cpuinfo.transition_latency = 1 * 1024 * 1024;//why this value??
 
 #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
 	cpufreq_frequency_table_get_attr(scalable_sc8810[policy->cpu].freq_tbl, policy->cpu);
