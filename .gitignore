@@ -23,6 +23,7 @@
 *.lst
 *.symtypes
 *.order
+*.lds
 modules.builtin
 *.elf
 *.bin
@@ -34,6 +35,7 @@ modules.builtin
 *.lzo
 *.patch
 *.gcno
+*.gzip
 
 #
 # Top-level generic files
@@ -43,6 +45,11 @@ modules.builtin
 /linux
 /vmlinux
 /vmlinuz
+arch/arm/boot/Image
+arch/arm/boot/compressed/piggy.gzip
+arch/arm/boot/compressed/vmlinux
+arch/arm/boot/compressed/vmlinux.lds
+arch/arm/boot/zImage
 /System.map
 /Module.markers
 /Module.symvers
