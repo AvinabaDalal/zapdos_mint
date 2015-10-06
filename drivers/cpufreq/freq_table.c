@@ -41,17 +41,19 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
 		}
 		pr_debug("table entry %u: %u kHz, %u index\n",
 					i, freq, table[i].index);
+                pr_info("%s:freq - %u kHz\n", __func__,freq);
 		if (freq < min_freq)
 			min_freq = freq;
 		if (freq > max_freq)
 			max_freq = freq;
 	}
-
+        pr_info("%s:min_freq - %u kHz\n", __func__,min_freq);
+        pr_info("%s:max_freq - %u kHz\n", __func__,max_freq);
 	policy->min = policy->cpuinfo.min_freq = min_freq;
 	policy->max = policy->cpuinfo.max_freq = max_freq;
 #ifdef CONFIG_CPU_FREQ_SC8810
 //added by xing wei for mint
-	global_cpufreq_min_limit = min_freq;
+	global_cpufreq_min_limit = 200000;
 	global_cpufreq_max_limit = max_freq;
 	spin_lock_init(&g_cpufreq_lock);
 //end //added by xing wei

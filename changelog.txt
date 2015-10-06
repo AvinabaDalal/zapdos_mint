@@ -1,0 +1,12 @@
+1. Added many IOSchedulers.
+2. Disabled GFS.
+3. Asynchronous I/O latency to a solid-state disk greatly increased.
+4. NOATIME and NODIRATIME by default.
+5. Disabled CRC check.
+6. Optimized SLUB.
+7. Optimized Square root algorithm.
+8. No dirty things in kernel version.
+9. Enabled KSM.
+10. Added 1600 Mhz locked frequency.
+11. Improvements in CPU frequency scaling.
+12. Updated Dynamic fsync driver to v2.

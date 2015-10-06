@@ -1541,7 +1541,7 @@ static int fuse_retrieve(struct fuse_conn *fc, struct inode *inode,
 	else if (outarg->offset + num > file_size)
 		num = file_size - outarg->offset;
 
-	while (num) {
+	while (num && req->num_pages < FUSE_MAX_PAGES_PER_REQ) {
 		struct page *page;
 		unsigned int this_num;
 

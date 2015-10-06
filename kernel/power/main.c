@@ -338,7 +338,7 @@ cpufreq_min_limit_store(struct kobject *kobj, struct kobj_attribute *attr,
 		return -EINVAL;
 
 	spin_lock(&g_cpufreq_lock);
-	global_cpufreq_min_limit = tmp; 
+	global_cpufreq_min_limit = 200000; 
 	spin_unlock(&g_cpufreq_lock);
 	return n;
 }
@@ -364,7 +364,7 @@ cpufreq_max_limit_store(struct kobject *kobj, struct kobj_attribute *attr,
 		return -EINVAL;
 
 	spin_lock(&g_cpufreq_lock);
-	global_cpufreq_max_limit = tmp; 
+	global_cpufreq_max_limit = 1600000; 
 	spin_unlock(&g_cpufreq_lock);
 	return n;
 }

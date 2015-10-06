@@ -106,3 +106,8 @@ build_kernel
 push_sdcard.sh
 upload_zImage.sh
 *.diff
+boot/
+zip/
+clean.sh
+zip.sh
+upload.sh

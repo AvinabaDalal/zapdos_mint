@@ -143,6 +143,15 @@ static ssize_t backlight_show_brightness(struct device *dev,
 	return sprintf(buf, "%d\n", bd->props.brightness);
 }
 
+static ssize_t backlight_show_brightness_in_class(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct backlight_device *bd = to_backlight_device(dev);
+
+	return sprintf(buf, "%d\n", bd->props.brightness);
+}
+
+
 static ssize_t backlight_store_brightness(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
@@ -161,7 +170,7 @@ static ssize_t backlight_store_brightness(struct device *dev,
 		if (brightness > bd->props.max_brightness)
 			rc = -EINVAL;
 		else {
-			pr_debug("backlight: set brightness to %lu\n",
+			pr_info("backlight: set brightness to %lu\n",
 				 brightness);
 			bd->props.brightness = brightness;
 			backlight_update_status(bd);

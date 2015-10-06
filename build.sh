@@ -3,20 +3,24 @@
 
 
 #Build
-ZIMAGE="/home/avinabadalal/kernel/arch/arm/boot/zImage"
-IMAGE="/home/avinabadalal/kernel/arch/arm/boot/Image"
-KERNEL_DIR="/home/avinabadalal/kernel"
+ZIMAGE="/home/avinaba/android/kernel/mint/mint/arch/arm/boot/zImage"
+IMAGE="/home/avinaba/android/kernel/mint/mint/arch/arm/boot/Image"
+KERNEL_DIR="/home/avinaba/android/kernel/mint/mint/"
 BUILD_START=$(date +"%s")
+cd $KERNEL_DIR
 export ARCH=arm
 export SUBARCH=arm
-export KBUILD_BUILD_USER="AvinabaDalal"
-export KBUILD_BUILD_HOST="charizard"
+export KBUILD_BUILD_USER="corphish"
+export KBUILD_BUILD_HOST="Damned-PC"
+export CROSS_COMPILE="/home/avinaba/android/toolchain/arm-eabi-4.4.3/bin/arm-eabi-"
 if [ -a $KERNEL_DIR/arch/arm/boot/zImage ];
 then
 rm $ZIMAGE
 rm $IMAGE
 fi
 make mint-zapdos_defconfig
-make zImage
+make Image
 
-echo "Now make boot.img and run Odin.sh"
+./boot.sh
+
+
